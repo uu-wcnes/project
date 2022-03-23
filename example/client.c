@@ -13,6 +13,7 @@ AUTOSTART_PROCESSES(&client_process);
 #define FILE_SIZE 10000
 #define PKT_SIZE 32
 #define HDR_SIZE 5
+#define GPIO_P1_08 NRF_GPIO_PIN_MAP(1, 8) // P1.08 
 
 /* including a header to the packet:
  * - 1B sequence number
@@ -62,7 +63,9 @@ static  void compute_sequence(uint8_t *packet, uint8_t seed, uint8_t length) {
 static void send(const void* data, uint16_t len) {
     memcpy(nullnet_buf, data, len);
     nullnet_len = len;
+    nrf_gpio_pin_set(GPIO_P1_08);
     NETSTACK_NETWORK.output(NULL);
+    nrf_gpio_pin_clear(GPIO_P1_08);
 }
 
 static void recv(const void *data, uint16_t len,
@@ -81,6 +84,10 @@ PROCESS_THREAD(client_process, ev, data) {
 	nullnet_buf = (uint8_t *)&buffer;
 	nullnet_len = sizeof(buffer);
 	nullnet_set_input_callback(recv);
+
+    /* initialize gpio */
+    nrf_gpio_cfg_output(GPIO_P1_08);
+    nrf_gpio_pin_clear(GPIO_P1_08);
 
     /* Setup a periodic timer that expires after 2 seconds. */
     etimer_set(&timer, CLOCK_SECOND / 1);
