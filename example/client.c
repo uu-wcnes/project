@@ -11,14 +11,14 @@ PROCESS(client_process, "Clicker client");
 AUTOSTART_PROCESSES(&client_process);
 
 #define FILE_SIZE 10000
-#define PKT_SIZE 32
+#define PKT_SIZE 100
 #define HDR_SIZE 5
-#define GPIO_P1_08 NRF_GPIO_PIN_MAP(1, 8) // P1.08 
+#define GPIO_P1_08 NRF_GPIO_PIN_MAP(1, 8) // P1.08
 
 /* including a header to the packet:
  * - 1B sequence number
  * - 4B tx_timestamp
- * 
+ *
  * packet: buffer to be updated with the header
  * seq: sequence number of the packet
  */
@@ -32,10 +32,10 @@ static void add_header(uint8_t *packet, uint8_t seq) {
 }
 
 /* generaion of a random sequence.
- * 
+ *
  * packet: buffer to be filled with the random sequence
- * seed: seed to initialize the random generator. 
- *       (to have unique and reproducable sequences for every packet. 
+ * seed: seed to initialize the random generator.
+ *       (to have unique and reproducable sequences for every packet.
           Use the sequence number as seed!)
  * length: length of the sequence
  */
@@ -49,7 +49,7 @@ static  void compute_sequence(uint8_t *packet, uint8_t seed, uint8_t length) {
         num = (num * A1 + C1) & RAND_MAX1;
         packet[i] = (uint8_t)(num & MAX_BYTE);
 
-    }                 
+    }
 }
 
 
@@ -79,7 +79,7 @@ PROCESS_THREAD(client_process, ev, data) {
     static struct etimer timer;
 
 	PROCESS_BEGIN();
-    
+
 	/* Initialize NullNet */
 	nullnet_buf = (uint8_t *)&buffer;
 	nullnet_len = sizeof(buffer);
@@ -90,8 +90,8 @@ PROCESS_THREAD(client_process, ev, data) {
     nrf_gpio_pin_clear(GPIO_P1_08);
 
     /* Setup a periodic timer that expires after 2 seconds. */
-    etimer_set(&timer, CLOCK_SECOND / 1);
-    
+    etimer_set(&timer, CLOCK_SECOND / 10);
+
 	/* Loop forever. */
 	while (1) {
 		PROCESS_WAIT_EVENT_UNTIL(etimer_expired(&timer));
